@@ -1,9 +1,10 @@
-﻿namespace pz7
+﻿using System;
+
+namespace FinancialCalculator
 {
-#pragma warning disable
-    internal class Program
+    class Program
     {
-        public static void Main(string[] args)
+        static void Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -31,7 +32,7 @@
                         CalculateDeposit();
                         break;
                     case "4":
-                        Console.WriteLine("Ещё увидимся :)");
+                        Console.WriteLine("До свидания!");
                         return;
                     default:
                         Console.WriteLine("Неверный выбор. Нажмите любую клавишу для продолжения...");
@@ -50,13 +51,18 @@
             try
             {
                 Console.Write("Сумма кредита (руб): ");
-                double loanAmount = double.Parse(Console.ReadLine());
+                double loanAmount = GetPositiveNumber();
 
                 Console.Write("Срок кредита (месяцев): ");
-                int loanTerm = int.Parse(Console.ReadLine());
+                int loanTerm = GetPositiveInteger();
 
                 Console.Write("Процентная ставка (% годовых): ");
-                double interestRate = double.Parse(Console.ReadLine());
+                double interestRate = GetNonNegativeNumber();
+
+                if (interestRate == 0)
+                {
+                    Console.WriteLine("Внимание: Процентная ставка 0% - кредит без процентов!");
+                }
 
                 // Расчет ежемесячной процентной ставки
                 double monthlyRate = interestRate / 12 / 100;
@@ -72,10 +78,6 @@
                 Console.WriteLine($"Ежемесячный платеж: {monthlyPayment:F2} руб");
                 Console.WriteLine($"Общая сумма выплат: {totalPayment:F2} руб");
                 Console.WriteLine($"Переплата по кредиту: {overpayment:F2} руб");
-            }
-            catch (FormatException)
-            {
-                Console.WriteLine("Ошибка: Введите корректные числовые значения!");
             }
             catch (Exception ex)
             {
@@ -96,22 +98,26 @@
             try
             {
                 Console.Write("Исходная валюта: ");
-                string fromCurrency = Console.ReadLine().ToUpper();
+                string fromCurrency = GetValidCurrency();
 
                 Console.Write("Целевая валюта: ");
-                string toCurrency = Console.ReadLine().ToUpper();
+                string toCurrency = GetValidCurrency();
 
                 Console.Write("Сумма для конвертации: ");
-                double amount = double.Parse(Console.ReadLine());
+                double amount = GetNonNegativeNumber();
+
+                if (amount == 0)
+                {
+                    Console.WriteLine("Сумма для конвертации равна 0.");
+                    Console.WriteLine("\nНажмите любую клавишу для продолжения...");
+                    Console.ReadKey();
+                    return;
+                }
 
                 double result = ConvertCurrencyAmount(fromCurrency, toCurrency, amount);
 
                 Console.WriteLine($"\n=== РЕЗУЛЬТАТ КОНВЕРТАЦИИ ===");
                 Console.WriteLine($"{amount:F2} {fromCurrency} = {result:F2} {toCurrency}");
-            }
-            catch (FormatException)
-            {
-                Console.WriteLine("Ошибка: Введите корректные числовые значения!");
             }
             catch (Exception ex)
             {
@@ -121,6 +127,7 @@
             Console.WriteLine("\nНажмите любую клавишу для продолжения...");
             Console.ReadKey();
         }
+
         static double ConvertCurrencyAmount(string from, string to, double amount)
         {
             // Фиксированные курсы
@@ -131,7 +138,6 @@
             // Если валюты одинаковые
             if (from == to)
                 return amount;
-
             // Конвертация через RUB как базовую валюту
             double amountInRub = 0;
 
@@ -174,16 +180,21 @@
             try
             {
                 Console.Write("Сумма вклада (руб): ");
-                double depositAmount = double.Parse(Console.ReadLine());
+                double depositAmount = GetPositiveNumber();
 
                 Console.Write("Срок вклада (месяцев): ");
-                int depositTerm = int.Parse(Console.ReadLine());
+                int depositTerm = GetPositiveInteger();
 
                 Console.Write("Процентная ставка (% годовых): ");
-                double interestRate = double.Parse(Console.ReadLine());
+                double interestRate = GetNonNegativeNumber();
+
+                if (interestRate == 0)
+                {
+                    Console.WriteLine("Внимание: Процентная ставка 0% - вклад без процентов!");
+                }
 
                 Console.Write("Тип вклада (1 - с капитализацией, 2 - без капитализации): ");
-                string depositType = Console.ReadLine();
+                string depositType = GetValidDepositType();
 
                 double income = 0;
                 double totalAmount = 0;
@@ -201,22 +212,11 @@
                     income = depositAmount * interestRate * depositTerm / 12 / 100;
                     totalAmount = depositAmount + income;
                 }
-                else
-                {
-                    Console.WriteLine("Ошибка: Неверный тип вклада!");
-                    Console.WriteLine("Нажмите любую клавишу для продолжения...");
-                    Console.ReadKey();
-                    return;
-                }
 
                 Console.WriteLine("\n=== РЕЗУЛЬТАТЫ РАСЧЕТА ===");
                 Console.WriteLine($"Доход по вкладу: {income:F2} руб");
                 Console.WriteLine($"Итоговая сумма: {totalAmount:F2} руб");
                 Console.WriteLine($"Тип вклада: {(depositType == "1" ? "с капитализацией" : "без капитализации")}");
-            }
-            catch (FormatException)
-            {
-                Console.WriteLine("Ошибка: Введите корректные числовые значения!");
             }
             catch (Exception ex)
             {
@@ -225,6 +225,89 @@
 
             Console.WriteLine("\nНажмите любую клавишу для продолжения...");
             Console.ReadKey();
+        }
+
+        // Вспомогательные методы для валидации
+
+        static double GetPositiveNumber()
+        {
+            while (true)
+            {
+                if (double.TryParse(Console.ReadLine(), out double number))
+                {
+                    if (number > 0)
+                        return number;
+                    else
+                        Console.Write("Ошибка: Число должно быть положительным. Попробуйте снова: ");
+                }
+                else
+                {
+                    Console.Write("Ошибка: Введите корректное число: ");
+                }
+            }
+        }
+
+        static double GetNonNegativeNumber()
+        {
+            while (true)
+            {
+                if (double.TryParse(Console.ReadLine(), out double number))
+                {
+                    if (number >= 0)
+                        return number;
+                    else
+                        Console.Write("Ошибка: Число не может быть отрицательным. Попробуйте снова: ");
+                }
+                else
+                {
+                    Console.Write("Ошибка: Введите корректное число: ");
+                }
+            }
+        }
+
+        static int GetPositiveInteger()
+        {
+            while (true)
+            {
+                if (int.TryParse(Console.ReadLine(), out int number))
+                {
+                    if (number > 0)
+                        return number;
+                    else
+                        Console.Write("Ошибка: Число должно быть положительным. Попробуйте снова: ");
+                }
+                else
+                {
+                    Console.Write("Ошибка: Введите целое число: ");
+                }
+            }
+        }
+
+        static string GetValidCurrency()
+        {
+            string[] validCurrencies = { "RUB", "USD", "EUR" };
+            while (true)
+            {
+                string input = Console.ReadLine().ToUpper().Trim();
+
+                if (Array.Exists(validCurrencies, currency => currency == input))
+                    return input;
+                else
+                    Console.Write("Ошибка: Доступные валюты: RUB, USD, EUR. Попробуйте снова: ");
+            }
+        }
+
+        static string GetValidDepositType()
+        {
+            while (true)
+            {
+                string input = Console.ReadLine().Trim();
+
+                if (input == "1" || input == "2")
+                    return input;
+                else
+                    Console.Write("Ошибка: Введите 1 (с капитализацией) или 2 (без капитализации): ");
+            }
         }
     }
 }
