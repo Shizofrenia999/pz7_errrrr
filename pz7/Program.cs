@@ -214,8 +214,8 @@ namespace FinancialCalculator
                 }
 
                 Console.WriteLine("\n=== РЕЗУЛЬТАТЫ РАСЧЕТА ===");
-                Console.WriteLine($"Доход по вкладу: {income:F2} руб");
-                Console.WriteLine($"Итоговая сумма: {totalAmount:F2} руб");
+                Console.WriteLine($"Доход по вкладу: {income} руб");
+                Console.WriteLine($"Итоговая сумма: {totalAmount} руб");
                 Console.WriteLine($"Тип вклада: {(depositType == "1" ? "с капитализацией" : "без капитализации")}");
             }
             catch (Exception ex)
